@@ -38,9 +38,24 @@ int orderArray[5] = {0, 0, 0, 0, 0}; // To track quantities ordered
 int burgerCustomerInput();
 void displayMenu();
 bool getBurgerInputs();
-void calculate();
+void calculate(double &subTotal, double &taxAmount, double &finalBill, int customerType);
 void printAndSaveBill(double subTotal, double taxAmount, double finalBill);
 void saveBillToFile(double subTotal, double taxAmount, double finalBill);
+
+
+
+int main() {
+    double subTotal = 0, taxAmount = 0, finalBill = 0;
+    int customerType = burgerCustomerInput();
+
+    // Calculates and sets the values of sub total, amount of tax, and final bill.
+    calculate(subTotal, taxAmount, finalBill, customerType);
+
+    // Writes the final bill to display and saves it into a text file.
+    printAndSaveBill(subTotal, taxAmount, finalBill);
+
+    return 0;
+}
 
 int burgerCustomerInput() {
 
@@ -210,59 +225,4 @@ void saveBillToFile(double subTotal, double taxAmount, double finalBill) {
         outputFile.close();
 
     }
-
-}
-
-
-int main() {
-    double subTotal = 0, taxAmount = 0, finalBill = 0;
-    int customerType = burgerCustomerInput();
-
-    calculate(subTotal, taxAmount, finalBill, customerType);
-    printAndSaveBill(subTotal, taxAmount, finalBill);
-
-
-    /*
-    // Make an ofstream object and open a new output.txt file
-    ofstream outputFile;
-    outputFile.open("output.txt");
-
-    // If file successfully opened, write the monetary value of the final bill
-    if(outputFile) {
-
-        outputFile << "Ordered Items and Quantities:" << endl;
-        outputFile << "De Anza Burger Quantity Ordered: " << quantity1 << endl;
-        outputFile << "Bacon Cheese Burger Quantity Ordered: " << quantity2 << endl;
-        outputFile << "Mushroom Swiss Burger Quantity Ordered: " << quantity3 << endl;
-        outputFile << "Western Burger Quantity Ordered: " << quantity4 << endl;
-        outputFile << "Don Cali Burger Quantity Ordered: " << quantity5 << endl;
-        outputFile << endl;
-
-        outputFile << fixed << showpoint << setprecision(2);
-        // Writing the cost per item
-        outputFile << "Cost Per Item: " << endl;
-        outputFile << "De Anza Burger: $5.25 x " << quantity1 << " = $" << costQuantity1 << endl;
-        outputFile << "Bacon Cheese Burger: $5.75 x " << quantity2 << " = $" << costQuantity2 << endl;
-        outputFile << "Mushroom Swiss Burger: $5.95 x " << quantity3 << " = $" << costQuantity3 << endl;
-        outputFile << "Western Burger: $5.95 x " << quantity4 << " = $" << costQuantity4 << endl;
-        outputFile << "Don Cali Burger: $5.95 x " << quantity5 << " = $" << costQuantity5 << endl;
-
-        // Writing the sub total
-        outputFile << "\nTotal Before Tax: $" << subTotal << endl;
-
-        // Displaying the tax amount
-        outputFile << "\nTax Amount: $" << taxAmount << endl;
-
-        // Displaying the final bill
-        outputFile << "\nFinal Bill: $" << (subTotal + taxAmount) << endl;
-        outputFile.close();
-    }
-
-    // Trailing-else displays an error message if file did not open properly.
-    else {
-        cout << "There was an issue opening the file." << endl;
-    }
-    */
-
-    return 0;
 }

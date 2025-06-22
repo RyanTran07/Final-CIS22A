@@ -207,8 +207,10 @@ void saveBillToFile(double subTotal, double taxAmount, double finalBill) {
 
         // Display the final total
         outputFile << "\nFinal Total: $" << (subTotal + taxAmount) << endl;
+        outputFile.close();
 
     }
+
 }
 
 

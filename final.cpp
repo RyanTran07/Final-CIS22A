@@ -25,20 +25,58 @@
 #include <iomanip>
 #include <string>
 #include <fstream>
+#include <cstdlib>
 
 using namespace std;
 
-void displayMenu(double priceArr[], string burgerArr[]) {
-    cout << "1. De Anza Burger - $5.25 \n"
-    << "2. Bacon Cheese Burger - $5.75\n"
-    << "3. Mushroom Swiss Burger - $5.95\n"
-    << "4. Western Burger - $5.95\n"
-    << "5. Don Cali Burger - $5.95\n"
-    << "6. End Order" << endl;
+// Global variables
+const int ARR_SIZE = 5;
+double PRICE_ARRAY[5] = {5.25, 5.75, 5.95, 5.95, 5.95};
+string BURGER_ARRAY[5] = { "De Anza Burger", "Bacon Cheese", "Mushroom Swiss", "Western Burger", "Don Cali Burger" };
+int orderArray[5] = {0, 0, 0, 0, 0}; // To track quantities ordered
+
+int burgerCustomerInput();
+void displayMenu();
+bool getBurgerInputs();
+void calculate();
+void printAndSaveBill(double subTotal, double taxAmount, double finalBill);
+void saveBillToFile(double subTotal, double taxAmount, double finalBill);
+
+int burgerCustomerInput() {
+
+    bool orderEnded = false;
+    while(!orderEnded) {
+        displayMenu();
+        cout << "6. End Order" << endl;
+        orderEnded = getBurgerInputs();
+    }
+
+     // Customer type input selection
+     int userCustomerType;
+     cout << "\nAre you a student or staff?" << endl;
+     cout << "1. Student\n" << "2. Staff\n";
+     cin.ignore();
+     cin >> userCustomerType;
+
+     // Input validation for customer type (student or staff)
+     while(userCustomerType != 1 && userCustomerType != 2) {
+         cout << "Please enter a correct customer type: ";
+         cin >> userCustomerType;
+     }
+
+     return userCustomerType;
 }
 
 
-bool getInputs(string burgerArr[], int orderArr[], int arrSize) {
+void displayMenu() {
+    for(int i = 0; i < ARR_SIZE; i++) {
+        cout << i + 1 << ". " << BURGER_ARRAY[i] << " - $" << PRICE_ARRAY[i] << endl;
+    }
+
+}
+
+
+bool getBurgerInputs() {
     int burgerSelection = 0;
     int userQuantity = 0;
     cout << "\nPlease choose a burger option, or select 6 to end order: ";
@@ -71,35 +109,55 @@ bool getInputs(string burgerArr[], int orderArr[], int arrSize) {
             // Switch cases user selection, adds inputted quantity to selected burger
             switch(burgerSelection) {
                 case 1:
-                    orderArr[0] += userQuantity;
+                    orderArray[0] += userQuantity;
                     break;
                 case 2:
-                    orderArr[1] += userQuantity;
+                    orderArray[1] += userQuantity;
                     break;
                 case 3:
-                    orderArr[2] += userQuantity;
+                    orderArray[2] += userQuantity;
                     break;
                 case 4:
-                    orderArr[3] += userQuantity;
+                    orderArray[3] += userQuantity;
                     break;
                 case 5:
-                    orderArr[4] += userQuantity;
+                    orderArray[4] += userQuantity;
                     break;
             }
         }
         return false;
 }
 
-void printBill(double priceArr[], int orderArr[], double totalPriceArr[], double subTotal, double taxAmount, double finalBill) {
+
+void calculate(double &subTotal, double &taxAmount, double &finalBill, int customerType) {
+    for(int i = 0; i < ARR_SIZE; i++) {
+        subTotal += (PRICE_ARRAY[i] * orderArray[i]);
+    }
+
+    if(customerType == 2) {
+        taxAmount = (subTotal * .09);
+    }
+
+    finalBill = subTotal + taxAmount;
+
+}
+
+void printAndSaveBill(double subTotal, double taxAmount, double finalBill) {
     cout << fixed << showpoint << setprecision(2);
+
+    cout << endl;
+
+    // Quantity Ordered Display
+    for(int i = 0; i < ARR_SIZE; i++) {
+        cout << BURGER_ARRAY[i] << " Quantity Ordered: " << orderArray[i] << endl;
+    }
 
     // Displaying the cost of each burger individually
     cout << "\nCost Per Item: " << endl;
-    cout << "De Anza Burger: $5.25 x " << orderArr[0]  << " = $" << totalPriceArr[0] << endl;
-    cout << "Bacon Cheese Burger: $5.75 x " << orderArr[1] << " = $" << totalPriceArr[1] << endl;
-    cout << "Mushroom Swiss Burger: $5.95 x " << orderArr[2] << " = $" << totalPriceArr[2] << endl;
-    cout << "Western Burger: $5.95 x " << orderArr[3] << " = $" << totalPriceArr[3] << endl;
-    cout << "Don Cali Burger: $5.95 x " << orderArr[4] << " = $" << totalPriceArr[4] << endl;
+    for(int i = 0; i < ARR_SIZE; i++) {
+        cout << BURGER_ARRAY[i] << ": $" << PRICE_ARRAY[i] << " x " << orderArray[i] << " = $" << (orderArray[i] * PRICE_ARRAY[i]);
+        cout << endl;
+    }
 
     // Displaying the subtotal of each burger (cost of all items before tax)
     cout << "\nTotal Before Tax: $" << subTotal << endl;
@@ -109,57 +167,57 @@ void printBill(double priceArr[], int orderArr[], double totalPriceArr[], double
 
     // Display the final total
     cout << "\nFinal Total: $" << (subTotal + taxAmount) << endl;
-}
 
-void calculate(double priceArr[], int orderArr[], double totalPriceArr[], int arrSize, double &subTotal, double &taxAmount, double &finalBill, int customerType) {
-    for(int i = 0; i < arrSize; i++) {
-        totalPriceArr[i] = (priceArr[i] * orderArr[i]);
-        subTotal += totalPriceArr[i];
-    }
-    if(customerType == 2) {
-        taxAmount = (subTotal * .09);
-    }
-
-    finalBill = subTotal + taxAmount;
+    saveBillToFile(subTotal, taxAmount, finalBill);
 
 }
 
-int userInputLoop(double priceArr[], string burgerArr[], int orderArr[], int arrSize) {
-    bool orderEnded = false;
-    while(!orderEnded) {
-        displayMenu(priceArr, burgerArr);
-        orderEnded = getInputs(burgerArr, orderArr, arrSize);
+void saveBillToFile(double subTotal, double taxAmount, double finalBill) {
+    ofstream outputFile;
+
+    unsigned seed = time(0);
+    srand(seed);
+
+    int randomNumber = rand() % 1001 + 1000;
+    string fileName = to_string(randomNumber) + ".txt";
+    outputFile.open(fileName);
+
+    if(outputFile) {
+        outputFile << fixed << showpoint << setprecision(2);
+
+        outputFile << endl;
+
+        // Quantity Ordered Display
+        for(int i = 0; i < ARR_SIZE; i++) {
+            outputFile << BURGER_ARRAY[i] << " Quantity Ordered: " << orderArray[i] << endl;
+        }
+
+        // Displaying the cost of each burger individually
+        outputFile << "\nCost Per Item: " << endl;
+        for(int i = 0; i < ARR_SIZE; i++) {
+            outputFile << BURGER_ARRAY[i] << ": $" << PRICE_ARRAY[i] << " x " << orderArray[i] << " = $" << (orderArray[i] * PRICE_ARRAY[i]);
+            outputFile << endl;
+        }
+
+        // Displaying the subtotal of each burger (cost of all items before tax)
+        outputFile << "\nTotal Before Tax: $" << subTotal << endl;
+
+        // Display the amount of tax
+        outputFile << "\nTax Amount: $" << taxAmount << endl;
+
+        // Display the final total
+        outputFile << "\nFinal Total: $" << (subTotal + taxAmount) << endl;
+
     }
-
-     // Customer type input selection
-     int userCustomerType;
-     cout << "\nAre you a student or staff?" << endl;
-     cout << "1. Student\n" << "2. Staff\n";
-     cin.ignore();
-     cin >> userCustomerType;
-
-     // Input validation for customer type (student or staff)
-     while(userCustomerType != 1 && userCustomerType != 2) {
-         cout << "Please enter a correct customer type: ";
-         cin >> userCustomerType;
-     }
-
-    return userCustomerType;
 }
+
 
 int main() {
-
-    //
-    double PRICE_ARRAY[5] = {5.25, 5.75, 5.95, 5.95, 5.95};
-    string BURGER_ARRAY[5] = { "De Anza Burger", "Bacon Cheese", "Mushroom Swiss", "Western Burger", "Don Cali Burger" };
-    int orderArray[5] = {0, 0, 0, 0, 0}; // To track quantities ordered
-    double totalPriceArray[5] = {0, 0, 0, 0, 0};
     double subTotal = 0, taxAmount = 0, finalBill = 0;
-    int customerType = userInputLoop(PRICE_ARRAY, BURGER_ARRAY, orderArray, 5);
+    int customerType = burgerCustomerInput();
 
-    calculate(PRICE_ARRAY, orderArray, totalPriceArray, 5, subTotal, taxAmount, finalBill, customerType);
-    printBill(PRICE_ARRAY, orderArray, totalPriceArray, subTotal, taxAmount, finalBill);
-
+    calculate(subTotal, taxAmount, finalBill, customerType);
+    printAndSaveBill(subTotal, taxAmount, finalBill);
 
 
     /*

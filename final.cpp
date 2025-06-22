@@ -35,6 +35,7 @@ double PRICE_ARRAY[5] = {5.25, 5.75, 5.95, 5.95, 5.95};
 string BURGER_ARRAY[5] = { "De Anza Burger", "Bacon Cheese", "Mushroom Swiss", "Western Burger", "Don Cali Burger" };
 int orderArray[5] = {0, 0, 0, 0, 0}; // To track quantities ordered
 
+// Function prototypes
 int burgerCustomerInput();
 void displayMenu();
 bool getBurgerInputs();
@@ -57,6 +58,20 @@ int main() {
     return 0;
 }
 
+/*
+ * This function continuously displays a menu and a prompt asking whether
+ * they would like to order more burgers. It returns the type of customer
+ * that the user is (staff or student). It calls the getBurgerInputs() function
+ * for each while loop iteration.
+ *
+ * Called in main.
+ *
+ * Receives: N/A
+ * Returns: An integer (1 or 2) representing if the user is a student or staff member.
+ * Uses: N/A
+ * Output: Displays the menu and input prompts for the menu selection and
+ *         customer type selection.
+ */
 int burgerCustomerInput() {
 
     bool orderEnded = false;
@@ -70,6 +85,7 @@ int burgerCustomerInput() {
      int userCustomerType;
      cout << "\nAre you a student or staff?" << endl;
      cout << "1. Student\n" << "2. Staff\n";
+     cout << ">";
      cin.ignore();
      cin >> userCustomerType;
 
@@ -82,7 +98,21 @@ int burgerCustomerInput() {
      return userCustomerType;
 }
 
-
+/*
+ * This function displays the menu in the format:
+ * 1. [burger name] - $ [burger price]
+ *
+ * Purpose: This function is called for every time the user chooses to
+ * continue ordering in the burgerCustomerInput function.
+ *
+ * Receives: N/A
+ *
+ * Returns: N/A
+ *
+ * Uses: BURGER_ARRAY - Global array storing the burger names.
+ *       PRICE_ARRAY - Global array storing the prices of each burger.
+ * Output: A menu of burgers.
+ */
 void displayMenu() {
     for(int i = 0; i < ARR_SIZE; i++) {
         cout << i + 1 << ". " << BURGER_ARRAY[i] << " - $" << PRICE_ARRAY[i] << endl;
@@ -90,6 +120,26 @@ void displayMenu() {
 
 }
 
+
+/*
+ * This function collects input on what burger the user wants to order, how many
+ * of each burger, and adds it to their order by modifying the global orderArray
+ * array.
+ *
+ * It is called in the burgerCustomerInput() function, in a while loop to allow
+ * the user to continue ordering until they choose option 6 (end order)
+ *
+ * Receives: N/A
+ *
+ * Returns: True - User chooses to end their order.
+ *          False - User wants to continue ordering.
+ *
+ * Uses: BURGER_ARRAY - Global array storing burger name
+ *       orderArray - Global array storing the quantities of each burger.
+ *
+ * Output: Adds the user's desired number of burgers of their selected burger to
+ *         their order in orderArray.
+ */
 
 bool getBurgerInputs() {
     int burgerSelection = 0;
@@ -112,7 +162,7 @@ bool getBurgerInputs() {
         else {
 
             // User input selection for the number of burgers selected
-            cout << "\nHow many burgers would you like? : ";
+            cout << "\nHow many " << BURGER_ARRAY[burgerSelection-1] << "'s would you like? : ";
             cin >> userQuantity;
 
             // Input validation, only allows non-negative input for # of burgers
@@ -144,20 +194,66 @@ bool getBurgerInputs() {
 }
 
 
+/*
+ * This function calculates and modifies the arguments passed into the subTotal,
+ * taxAmount, and finalBill parameters, thus appropriately storing the
+ * calculated values for the sub total, amount of tax, and what the final bill
+ * is in main.
+ *
+ * Receives: subTotal - A reference variable (type double) representing the sub total of the order.
+ *           taxAmount - A reference variable (type double) representing the amount of tax charged in the order.
+ *           finalBill - A reference variable (type double) representing the final total (sub total + tax) of the order.abort
+ *           customerType - A variable representing what type of customer the user is.
+ * Returns: N/A
+ *
+ * Uses: PRICE_ARRAY - Global array storing the burger prices.
+ *       orderArray - Global array storing the quantities of each burger.
+ *
+ * Output: Modifies the arguments passed into subTotal, taxAmount, and finalBill
+ *         with the calculations for sub total, the tax amount, and the final bill
+ *         respectively.
+ */
+
 void calculate(double &subTotal, double &taxAmount, double &finalBill, int customerType) {
+
+    // Modifying the subTotal parameter by adding the quantity of burgers ordered * price of eacch burger
     for(int i = 0; i < ARR_SIZE; i++) {
         subTotal += (PRICE_ARRAY[i] * orderArray[i]);
     }
 
+    // Modifying the taxAmount param if the customer type is an employee/staff member
     if(customerType == 2) {
         taxAmount = (subTotal * .09);
     }
 
+    // Modifying the final bill parameter with subTotal + taxAmount
     finalBill = subTotal + taxAmount;
 
 }
 
+/*
+ * This function accepts parameters that represent the subTotal, taxAmount, and
+ * final bill of the order, and displays the values alongside the quantity
+ * of each burger that is ordered, and the total price for each burger
+ * that is selected. It writes the bill to a randomly generated .txt file by
+ * calling a helper function saveBillToFile.
+ *
+ *
+ *
+ * Receives: subTotal - A variable (type double) representing the sub total.
+ *           taxAmount - A variable (type double) representing the tax charge on the order.
+ *           finalBill - A variable (type double) representing the total charge for the order.
+ * Returns: Nothing
+ *
+ * Uses: PRICE_ARRAY - Global array storing the burger prices.
+ *       orderArray - Global array storing the quantities of each burger.
+ *       BURGER_ARRAY - Global array storing burger names.
+ *
+ * Output: Displays the bill to the screen and writes the bill to a file.
+ */
 void printAndSaveBill(double subTotal, double taxAmount, double finalBill) {
+
+    //Output formatting
     cout << fixed << showpoint << setprecision(2);
 
     cout << endl;
@@ -183,45 +279,74 @@ void printAndSaveBill(double subTotal, double taxAmount, double finalBill) {
     // Display the final total
     cout << "\nFinal Total: $" << (subTotal + taxAmount) << endl;
 
+    // Calling the function to write the bill to the file.
     saveBillToFile(subTotal, taxAmount, finalBill);
 
 }
 
+/*
+ * This function accepts parameters that represent the subTotal, taxAmount, and
+ * final bill of the order, and writes the values alongside the quantity
+ * of each burger that is ordered, and the total price for each burger
+ * that is selected to a randomly generated text file.
+ *
+ * Called by the printAndSaveBill function.
+ *
+ * Receives: subTotal - A variable (type double) representing the sub total.
+ *           taxAmount - A variable (type double) representing the tax charge on the order.
+ *           finalBill - A variable (type double) representing the total charge for the order.
+ *
+ * Returns: Nothing
+ *
+ * Uses: PRICE_ARRAY - Global array storing the burger prices.
+ *       orderArray - Global array storing the quantities of each burger.
+ *       BURGER_ARRAY - Global array storing burger names.
+ *
+ * Output: Writes the bill to a randomly generated text file
+ */
 void saveBillToFile(double subTotal, double taxAmount, double finalBill) {
     ofstream outputFile;
 
+    // To generate a unique number for the text file every single run
     unsigned seed = time(0);
     srand(seed);
 
+    // Generating a random number between 1000 and 2000
     int randomNumber = rand() % 1001 + 1000;
+
+    // Creating and opening a random file name using the random number
     string fileName = to_string(randomNumber) + ".txt";
     outputFile.open(fileName);
 
+    // If the file is successfully opened, begin writing to it
     if(outputFile) {
+        // Formatting for the output file
         outputFile << fixed << showpoint << setprecision(2);
 
         outputFile << endl;
 
-        // Quantity Ordered Display
+        // Writing the quantity ordered to the file
         for(int i = 0; i < ARR_SIZE; i++) {
             outputFile << BURGER_ARRAY[i] << " Quantity Ordered: " << orderArray[i] << endl;
         }
 
-        // Displaying the cost of each burger individually
+        // Writing the total cost of each item ordered
         outputFile << "\nCost Per Item: " << endl;
         for(int i = 0; i < ARR_SIZE; i++) {
             outputFile << BURGER_ARRAY[i] << ": $" << PRICE_ARRAY[i] << " x " << orderArray[i] << " = $" << (orderArray[i] * PRICE_ARRAY[i]);
             outputFile << endl;
         }
 
-        // Displaying the subtotal of each burger (cost of all items before tax)
+        // Writing the subtotal of all ordered items (cost of all items before tax)
         outputFile << "\nTotal Before Tax: $" << subTotal << endl;
 
-        // Display the amount of tax
+        // Writing the amount of tax to the file
         outputFile << "\nTax Amount: $" << taxAmount << endl;
 
-        // Display the final total
+        // Writing the final bill to the file.
         outputFile << "\nFinal Total: $" << (subTotal + taxAmount) << endl;
+
+        // Closing the file after it is done
         outputFile.close();
 
     }
